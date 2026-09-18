@@ -183,3 +183,10 @@
 }
 .catalog__featured { margin-bottom: 16px; }
 .catalog__featured .supplier-card, .catalog__featured .discover-card { width: 100%; }
+
+.catalog__recommendation {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.catalog__recommendation--streaming { min-height: 112px; }
+.catalog__recommendation--streaming p { white-space: pre-wrap; }

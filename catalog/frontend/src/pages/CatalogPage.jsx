@@ -48,7 +48,8 @@ export function CatalogPage() {
   const [selectedIds, setSelectedIds] = useState(saved.selectedIds || [])
   const [visibleCount, setVisibleCount] = useState(saved.visibleCount || PAGE_SIZE)
   const [searchLog, setSearchLog] = useState([])
-  const [streamingRecommendation, pushStreamingChunk, resetStreamingRecommendation] = useTypewriter()
+  const [isRecommending, setIsRecommending] = useState(false)
+  const [streamingRecommendation, pushStreamingChunk, resetStreamingRecommendation, finishStreamingRecommendation] = useTypewriter()
   const requestId = useRef(0)
   const webRequestId = useRef(0)
   const stopStream = useRef(null)
@@ -109,6 +110,7 @@ export function CatalogPage() {
     setFeaturedSupplier(null)
     setWebStatus('idle')
     setSearchLog([])
+    setIsRecommending(false)
     resetStreamingRecommendation()
   }
 
@@ -139,6 +141,7 @@ export function CatalogPage() {
     setRecommendedCandidateUrl(null)
     setFeaturedSupplier(null)
     setSearchLog([])
+    setIsRecommending(false)
     resetStreamingRecommendation()
 
     stopStream.current = webSearchStream({ category, region: city, q: query }, {
@@ -148,12 +151,13 @@ export function CatalogPage() {
           pushStreamingChunk(event.text)
           return
         }
+        if (event.type === 'recommending') setIsRecommending(true)
         const line = describeEvent(event)
         if (line) setSearchLog((prev) => [...prev, line])
       },
       onDone: (data) => {
         if (currentRequest !== webRequestId.current) return
-        resetStreamingRecommendation()
+        finishStreamingRecommendation(data.recommendation)
         setWebResults(data.web.filter((c) => !c.already_in_catalog && c.preview))
         setRecommendation(data.recommendation)
         setRecommendedSupplierId(data.recommended_supplier_id ?? null)
@@ -267,22 +271,22 @@ export function CatalogPage() {
               )}
             </div>
 
+            {webStatus === 'loading' && <SearchTicker lines={searchLog} />}
+
+            {(recommendation || (webStatus === 'loading' && isRecommending)) && (
+              <div className={`catalog__recommendation ${webStatus === 'loading' ? 'catalog__recommendation--streaming' : ''} card-in`}>
+                <span className="catalog__recommendation-label">
+                  {webStatus === 'loading' ? 'Ответ ИИ · формируется' : 'Рекомендация по запросу'}
+                </span>
+                <p aria-live="polite">
+                  {streamingRecommendation || recommendation || 'Анализирую найденных поставщиков…'}
+                  {webStatus === 'loading' && <span className="catalog__recommendation-cursor" aria-hidden="true" />}
+                </p>
+              </div>
+            )}
+
             {status === 'ready' && sortedsuppliers.length === 0 && (
               <p className="catalog__empty">{emptyMessage}</p>
-            )}
-
-            {recommendation && (
-              <div className="catalog__recommendation card-in">
-                <span className="catalog__recommendation-label">Рекомендация по запросу</span>
-                <p>{recommendation}</p>
-              </div>
-            )}
-
-            {webStatus === 'loading' && streamingRecommendation && (
-              <div className="catalog__recommendation catalog__recommendation--streaming card-in">
-                <span className="catalog__recommendation-label">Собираю рекомендацию…</span>
-                <p>{streamingRecommendation}<span className="catalog__recommendation-cursor" /></p>
-              </div>
             )}
 
             {featuredCatalogSupplier && (
@@ -332,12 +336,6 @@ export function CatalogPage() {
                 </Button>
                 <span>Показано {visibleCount} из {sortedsuppliers.length}</span>
               </div>
-            )}
-
-            {webStatus === 'loading' && (
-              searchLog.length > 0
-                ? <SearchTicker lines={searchLog} />
-                : <p className="catalog__web-status"><Spinner label="Ищем в интернете и готовим рекомендацию..." /></p>
             )}
 
             {webStatus === 'error' && (
