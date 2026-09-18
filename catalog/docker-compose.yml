@@ -1,0 +1,68 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: suppliers
+      POSTGRES_PASSWORD: suppliers
+      POSTGRES_DB: suppliers
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U suppliers"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  qdrant:
+    image: qdrant/qdrant:v1.12.4
+    ports:
+      - "6333:6333"
+    volumes:
+      - qdrant_data:/qdrant/storage
+
+  backend:
+    build: ./backend
+    env_file:
+      - ./backend/.env
+    environment:
+      DATABASE_URL: postgresql://suppliers:suppliers@postgres:5432/suppliers
+      REDIS_URL: redis://redis:6379/0
+      QDRANT_URL: http://qdrant:6333
+      LLM_BASE_URL: http://host.docker.internal:1234/v1
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "8000:8000"
+    volumes:
+      - fastembed_cache:/root/.cache/fastembed_cache
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      qdrant:
+        condition: service_started
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "5190:80"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
+  qdrant_data:
+  fastembed_cache:

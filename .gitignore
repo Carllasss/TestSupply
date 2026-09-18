@@ -1,0 +1,29 @@
+# Секреты — никогда не коммитим
+.env
+.env.local
+*.env
+!.env.example
+!.env.development
+
+# Зависимости и сборки
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# Личные файлы, не относящиеся к коду
+*.pdf
+*.local.md
+DEPLOY_NOTES.local.md
+
+# ОС/редакторы
+.DS_Store
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.log
