@@ -1,6 +1,7 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 
+from app.core.rate_limit import limiter
 from app.db.session import get_db
 from app.schemas.supplier import (
     CompareRequest,
@@ -63,7 +64,9 @@ def _web_search_and_recommend(
 
 
 @router.get("/search-all", response_model=UnifiedSearchResponse)
+@limiter.limit("10/minute")
 def search_all(
+    request: Request,
     q: str | None = None,
     category: str | None = None,
     region: str | None = None,
@@ -79,7 +82,9 @@ def search_all(
 
 
 @router.get("/web-search", response_model=WebSearchResponse)
+@limiter.limit("10/minute")
 def web_search(
+    request: Request,
     q: str | None = None,
     category: str | None = None,
     region: str | None = None,
@@ -117,7 +122,8 @@ def confirm_candidate(payload: ConfirmCandidateRequest, db: Session = Depends(ge
 
 
 @router.post("/compare", response_model=CompareResponse)
-def compare(payload: CompareRequest, db: Session = Depends(get_db)) -> CompareResponse:
+@limiter.limit("5/minute")
+def compare(request: Request, payload: CompareRequest, db: Session = Depends(get_db)) -> CompareResponse:
     service = SupplierService(db)
     suppliers = [SupplierOut.model_validate(s) for s in service.get_many(payload.ids)]
     rec = compare_suppliers(payload.query, suppliers)
@@ -125,7 +131,8 @@ def compare(payload: CompareRequest, db: Session = Depends(get_db)) -> CompareRe
 
 
 @router.post("/scrape", response_model=SupplierOut)
-def scrape_supplier(payload: ExtractFromUrlRequest, db: Session = Depends(get_db)) -> SupplierOut:
+@limiter.limit("5/minute")
+def scrape_supplier(request: Request, payload: ExtractFromUrlRequest, db: Session = Depends(get_db)) -> SupplierOut:
     try:
         page_text = fetch_page_text(payload.url)
         fields = extract_supplier_fields(page_text)
@@ -136,7 +143,8 @@ def scrape_supplier(payload: ExtractFromUrlRequest, db: Session = Depends(get_db
 
 
 @router.post("/extract", response_model=SupplierOut)
-def extract_supplier(payload: ExtractFromTextRequest, db: Session = Depends(get_db)) -> SupplierOut:
+@limiter.limit("5/minute")
+def extract_supplier(request: Request, payload: ExtractFromTextRequest, db: Session = Depends(get_db)) -> SupplierOut:
     try:
         fields = extract_supplier_fields(payload.text)
     except ExtractionError as exc:
@@ -146,7 +154,8 @@ def extract_supplier(payload: ExtractFromTextRequest, db: Session = Depends(get_
 
 
 @router.post("/discover", response_model=DiscoverResponse)
-def discover_web_suppliers(payload: DiscoverRequest, db: Session = Depends(get_db)) -> DiscoverResponse:
+@limiter.limit("5/minute")
+def discover_web_suppliers(request: Request, payload: DiscoverRequest, db: Session = Depends(get_db)) -> DiscoverResponse:
     service = SupplierService(db)
     result = discover_suppliers(payload.query, known_identity=service.known_identity())
     return DiscoverResponse(**result)

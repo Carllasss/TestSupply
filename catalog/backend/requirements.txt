@@ -11,3 +11,4 @@ openai==1.59.6
 python-dotenv==1.0.1
 qdrant-client==1.12.1
 fastembed==0.4.2
+slowapi==0.1.9
