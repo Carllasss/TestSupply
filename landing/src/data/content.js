@@ -105,6 +105,7 @@ export const skills = [
 export const contact = {
   email: 'ivanovns.work@gmail.com',
   city: 'Екатеринбург, готов к удалённой работе и гибриду',
-  github: 'https://github.com/ivanovns',
+  github: 'https://github.com/Carllasss/TestSupply',
   part2: 'Сервис поиска поставщиков · прототип',
+  part2Url: 'https://testsupplies.work.gd/catalog/',
 }
