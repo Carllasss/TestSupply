@@ -45,7 +45,10 @@ services:
         condition: service_started
 
   frontend:
-    build: ./catalog/frontend
+    build:
+      context: ./catalog/frontend
+      args:
+        VITE_BASE_PATH: /catalog/
     ports:
       - "8080:80"
     depends_on:
