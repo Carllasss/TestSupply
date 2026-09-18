@@ -96,13 +96,18 @@ def _preview_candidate(candidate: dict) -> dict:
     return candidate
 
 
-def discover_suppliers(
+def discover_suppliers_stream(
     user_query: str,
     known_identity: KnownIdentity,
     region: str | None = None,
     max_candidates: int = 6,
-) -> dict:
+):
+    """Same pipeline as discover_suppliers(), but yields progress events as it
+    goes (for an SSE-driven "search log" in the UI) and finishes with a
+    {"type": "result", ...} event carrying the same shape discover_suppliers()
+    returns."""
     search_query = build_web_query(user_query, region)
+    yield {"type": "searching", "query": search_query}
     raw_results = duckduckgo_search(search_query, max_results=15)
 
     seen_domains: set[str] = set()
@@ -115,15 +120,19 @@ def discover_suppliers(
         item["domain"] = domain
         item["already_in_catalog"] = known_identity.matches(domain=domain)
         candidates.append(item)
+        yield {"type": "found", "domain": domain, "title": item["title"]}
         if len(candidates) >= max_candidates:
             break
 
     to_preview = [c for c in candidates if not c["already_in_catalog"]]
     if to_preview:
-        with ThreadPoolExecutor(max_workers=5) as pool:
+        # One worker per candidate: they're I/O-bound (network + LLM), so this
+        # runs them fully in parallel instead of queueing behind a fixed pool.
+        with ThreadPoolExecutor(max_workers=len(to_preview)) as pool:
             futures = {pool.submit(_preview_candidate, c): c for c in to_preview}
             for future in as_completed(futures):
-                future.result()
+                c = future.result()
+                yield {"type": "checked", "domain": c["domain"], "ok": c.get("preview") is not None}
 
     for candidate in candidates:
         preview = candidate.get("preview")
@@ -132,4 +141,16 @@ def discover_suppliers(
         if known_identity.matches(name=preview.get("name"), phone=preview.get("contact_phone")):
             candidate["already_in_catalog"] = True
 
-    return {"search_query": search_query, "candidates": candidates}
+    yield {"type": "result", "search_query": search_query, "candidates": candidates}
+
+
+def discover_suppliers(
+    user_query: str,
+    known_identity: KnownIdentity,
+    region: str | None = None,
+    max_candidates: int = 6,
+) -> dict:
+    for event in discover_suppliers_stream(user_query, known_identity, region, max_candidates):
+        if event["type"] == "result":
+            return {"search_query": event["search_query"], "candidates": event["candidates"]}
+    return {"search_query": build_web_query(user_query, region), "candidates": []}

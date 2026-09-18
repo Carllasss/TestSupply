@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { fetchSuppliers, fetchFacets, fetchSupplier, webSearch } from '../api/suppliers'
+import { fetchSuppliers, fetchFacets, fetchSupplier, webSearchStream } from '../api/suppliers'
 import { Filters } from '../components/Filters'
 import { SearchBar } from '../components/SearchBar'
 import { SupplierCard } from '../components/SupplierCard'
@@ -10,6 +10,7 @@ import { Button } from '../components/Button'
 import { sortBySupplierField } from '../utils/parseNumber'
 import { useStagger } from '../hooks/useStagger'
 import { Spinner } from '../components/Spinner'
+import { SearchTicker } from '../components/SearchTicker'
 import './CatalogPage.css'
 
 const PAGE_SIZE = 12
@@ -45,8 +46,10 @@ export function CatalogPage() {
   const [added, setAdded] = useState(saved.added || {})
   const [selectedIds, setSelectedIds] = useState(saved.selectedIds || [])
   const [visibleCount, setVisibleCount] = useState(saved.visibleCount || PAGE_SIZE)
+  const [searchLog, setSearchLog] = useState([])
   const requestId = useRef(0)
   const webRequestId = useRef(0)
+  const stopStream = useRef(null)
 
   const runCatalogSearch = (q, region, price, moq, nextCategory = category) => {
     const currentRequest = ++requestId.current
@@ -69,6 +72,8 @@ export function CatalogPage() {
   useEffect(() => {
     fetchFacets().then(setFacets).catch(() => {})
   }, [])
+
+  useEffect(() => () => stopStream.current?.(), [])
 
   useEffect(() => {
     if (skipInitialSearch.current) {
@@ -94,12 +99,14 @@ export function CatalogPage() {
 
   const clearWebSearch = () => {
     webRequestId.current += 1
+    stopStream.current?.()
     setWebResults([])
     setRecommendation(null)
     setRecommendedSupplierId(null)
     setRecommendedCandidateUrl(null)
     setFeaturedSupplier(null)
     setWebStatus('idle')
+    setSearchLog([])
   }
 
   const handleSearchSubmit = ({ query: newQuery, city: newCity }) => {
@@ -109,16 +116,34 @@ export function CatalogPage() {
     runCatalogSearch(newQuery, newCity, hasPrice, hasMoq)
   }
 
+  const describeEvent = (event) => {
+    switch (event.type) {
+      case 'searching': return `Ищем «${event.query}» в интернете…`
+      case 'found': return `Нашли сайт: ${event.domain}`
+      case 'checked': return event.ok ? `Посмотрели ${event.domain} — данные собрали` : `Посмотрели ${event.domain} — не разобрали страницу`
+      case 'recommending': return 'Собираю рекомендацию…'
+      default: return null
+    }
+  }
+
   const handleWebSearch = () => {
     const currentRequest = ++webRequestId.current
+    stopStream.current?.()
     setWebStatus('loading')
     setWebResults([])
     setRecommendation(null)
     setRecommendedSupplierId(null)
     setRecommendedCandidateUrl(null)
     setFeaturedSupplier(null)
-    webSearch({ category, region: city, q: query })
-      .then((data) => {
+    setSearchLog([])
+
+    stopStream.current = webSearchStream({ category, region: city, q: query }, {
+      onEvent: (event) => {
+        if (currentRequest !== webRequestId.current) return
+        const line = describeEvent(event)
+        if (line) setSearchLog((prev) => [...prev, line])
+      },
+      onDone: (data) => {
         if (currentRequest !== webRequestId.current) return
         setWebResults(data.web.filter((c) => !c.already_in_catalog && c.preview))
         setRecommendation(data.recommendation)
@@ -132,10 +157,11 @@ export function CatalogPage() {
             })
             .catch(() => {})
         }
-      })
-      .catch(() => {
+      },
+      onError: () => {
         if (currentRequest === webRequestId.current) setWebStatus('error')
-      })
+      },
+    })
   }
 
   const resetFilters = () => {
@@ -290,7 +316,9 @@ export function CatalogPage() {
             )}
 
             {webStatus === 'loading' && (
-              <p className="catalog__web-status"><Spinner label="Ищем в интернете и готовим рекомендацию..." /></p>
+              searchLog.length > 0
+                ? <SearchTicker lines={searchLog} />
+                : <p className="catalog__web-status"><Spinner label="Ищем в интернете и готовим рекомендацию..." /></p>
             )}
 
             {webStatus === 'error' && (

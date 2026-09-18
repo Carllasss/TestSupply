@@ -1,4 +1,7 @@
+import json
+
 from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 
 from app.core.rate_limit import limiter
@@ -20,7 +23,7 @@ from app.schemas.supplier import (
 from app.services.extraction_service import ExtractionError, extract_supplier_fields, fetch_page_text
 from app.services.recommendation_service import Recommendation, compare_suppliers, recommend_supplier
 from app.services.supplier_service import SupplierService
-from app.services.web_search_service import discover_suppliers
+from app.services.web_search_service import discover_suppliers, discover_suppliers_stream
 
 router = APIRouter(prefix="/api/suppliers", tags=["suppliers"])
 
@@ -96,6 +99,50 @@ def web_search(
     return WebSearchResponse(
         web=web_candidates, recommendation=rec.text,
         recommended_supplier_id=rec.winner_supplier_id, recommended_candidate_url=rec.winner_candidate_url,
+    )
+
+
+@router.get("/web-search/stream")
+@limiter.limit("10/minute")
+def web_search_stream(
+    request: Request,
+    q: str | None = None,
+    category: str | None = None,
+    region: str | None = None,
+    db: Session = Depends(get_db),
+) -> StreamingResponse:
+    service = SupplierService(db)
+    catalog = service.search(category=category, region=region, query=q)
+
+    def event_stream():
+        web_candidates: list[dict] = []
+        if q:
+            for event in discover_suppliers_stream(q, known_identity=service.known_identity(), region=region, max_candidates=6):
+                if event["type"] == "result":
+                    web_candidates = event["candidates"]
+                    if category:
+                        web_candidates = [
+                            c for c in web_candidates
+                            if not c.get("preview") or c["preview"]["category"] == category
+                        ]
+                else:
+                    yield f"data: {json.dumps(event, ensure_ascii=False)}\n\n"
+
+        yield f"data: {json.dumps({'type': 'recommending'}, ensure_ascii=False)}\n\n"
+        rec = recommend_supplier(q, catalog, web_candidates)
+        final = {
+            "type": "done",
+            "web": web_candidates,
+            "recommendation": rec.text,
+            "recommended_supplier_id": rec.winner_supplier_id,
+            "recommended_candidate_url": rec.winner_candidate_url,
+        }
+        yield f"data: {json.dumps(final, ensure_ascii=False)}\n\n"
+
+    return StreamingResponse(
+        event_stream(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
     )
 
 

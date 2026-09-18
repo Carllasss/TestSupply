@@ -46,6 +46,40 @@ export function webSearch({ category, region, q } = {}) {
   return request(`/api/suppliers/web-search${qs ? `?${qs}` : ''}`)
 }
 
+// SSE version: streams progress events while searching, then a final
+// {type: 'done', ...} event with the same shape webSearch() resolves to.
+// Returns a cleanup function to stop listening early (e.g. on unmount).
+export function webSearchStream({ category, region, q } = {}, { onEvent, onDone, onError } = {}) {
+  const params = new URLSearchParams()
+  if (category) params.set('category', category)
+  if (region) params.set('region', region)
+  if (q) params.set('q', q)
+  const qs = params.toString()
+  const source = new EventSource(`${BASE_URL}/api/suppliers/web-search/stream${qs ? `?${qs}` : ''}`)
+
+  source.onmessage = (event) => {
+    let data
+    try {
+      data = JSON.parse(event.data)
+    } catch {
+      return
+    }
+    if (data.type === 'done') {
+      source.close()
+      onDone?.(data)
+    } else {
+      onEvent?.(data)
+    }
+  }
+
+  source.onerror = () => {
+    source.close()
+    onError?.()
+  }
+
+  return () => source.close()
+}
+
 export function scrapeSupplier(url) {
   return request('/api/suppliers/scrape', {
     method: 'POST',
