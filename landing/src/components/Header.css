@@ -1,0 +1,108 @@
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 90;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid transparent;
+  transition: background-color var(--dur) var(--ease), border-color var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+}
+
+.site-header.is-stuck {
+  background: rgba(255, 255, 255, 0.86);
+  border-bottom-color: var(--line);
+  box-shadow: 0 8px 24px -20px rgba(17, 17, 17, 0.25);
+}
+
+.site-header .container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  min-height: 64px;
+  gap: 16px;
+}
+
+.site-header__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: var(--ink);
+}
+
+.site-header__mark {
+  display: grid;
+  grid-template-columns: repeat(2, 6px);
+  grid-template-rows: repeat(2, 6px);
+  gap: 2px;
+  flex: none;
+}
+
+.site-header__mark span {
+  border-radius: 1px;
+  background: var(--ink);
+  transition: background-color var(--dur) var(--ease), transform var(--dur) var(--ease);
+}
+
+.site-header__mark span:first-child {
+  background: var(--cyan-dark);
+}
+
+.site-header__brand:hover .site-header__mark span {
+  transform: scale(1.15);
+}
+
+.site-header__name {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.site-header__nav {
+  display: flex;
+  gap: 28px;
+  font-size: 14px;
+  color: var(--ink-2);
+}
+
+@media (max-width: 700px) {
+  .site-header__nav { gap: 14px; font-size: 13px; }
+  .site-header__name { font-size: 14px; }
+  .site-header .container { min-height: 60px; }
+}
+
+.site-header__nav a {
+  position: relative;
+  text-decoration: none;
+  padding-block: 4px;
+  transition: color var(--dur) var(--ease);
+}
+
+.site-header__nav a span {
+  position: relative;
+}
+
+.site-header__nav a::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 100%;
+  bottom: 0;
+  height: 1px;
+  background: var(--cyan-dark);
+  transition: right 0.25s var(--ease);
+}
+
+.site-header__nav a:hover {
+  color: var(--ink);
+}
+
+.site-header__nav a:hover::after {
+  right: 0;
+}
+
+@media (max-width: 420px) {
+  .site-header__nav { gap: 10px; font-size: 12px; }
+  .site-header__brand { gap: 6px; }
+  .site-header__name { font-size: 13px; }
+}
