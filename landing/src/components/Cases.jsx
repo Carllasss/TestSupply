@@ -11,7 +11,7 @@ export function Cases() {
       <div className="container">
         <Reveal className="section-head">
           <h2>Проекты и задачи</h2>
-          <p>Несколько примеров того, как я применял AI в рабочих системах. Последний кейс — прототип для этого задания.</p>
+          <p>Несколько примеров моих сервисов на Python и работы с AI.</p>
         </Reveal>
         <div className={`cases__grid ${visible ? 'is-visible' : ''}`} ref={ref}>
           {projects.map((project, i) => (
