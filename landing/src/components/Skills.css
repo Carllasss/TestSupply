@@ -94,6 +94,12 @@
   letter-spacing: .06em;
 }
 
+.skills-section__learning-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
 .skills-section__learning p {
   color: var(--on-dark-2);
   font-size: 15px;

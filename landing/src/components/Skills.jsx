@@ -35,7 +35,10 @@ export function Skills() {
         </div>
         <Reveal className="skills-section__learning">
           <span>Дополнительно</span>
-          <p>Знаю Go. Прошёл Ozon Golang Route уровня Middle.</p>
+          <div className="skills-section__learning-text">
+            <p>Знаю Go. Прошёл Ozon Golang Route уровня Middle.</p>
+            <p>Менторил и был наставником для младших коллег.</p>
+          </div>
         </Reveal>
       </div>
     </section>
