@@ -30,8 +30,8 @@
 }
 
 .search-ticker__viewport {
-  max-height: 192px;
-  min-height: 112px;
+  max-height: 156px;
+  min-height: 108px;
   overflow-y: auto;
   overscroll-behavior: contain;
   padding: 15px 18px 15px 21px;
