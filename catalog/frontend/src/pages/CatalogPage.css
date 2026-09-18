@@ -1,0 +1,171 @@
+.catalog {
+  padding-block: clamp(40px, 6vw, 64px) 80px;
+}
+
+.catalog__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 24px;
+  flex-wrap: wrap;
+  margin-bottom: 36px;
+}
+
+.catalog__head h1 {
+  font-size: clamp(28px, 4vw, 38px);
+  font-weight: 500;
+  max-width: 18ch;
+}
+
+.catalog__head p {
+  font-size: 15.5px;
+  color: var(--ink-3);
+  max-width: 52ch;
+  margin-top: 10px;
+}
+
+.catalog__layout {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 32px;
+  align-items: start;
+}
+
+.catalog__results {
+  min-width: 0;
+}
+
+@media (max-width: 860px) {
+  .catalog__layout {
+    grid-template-columns: 1fr;
+  }
+
+  .filters {
+    position: static;
+  }
+}
+
+.catalog__results-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.catalog__count {
+  font-size: 14.5px;
+  color: var(--ink-3);
+}
+
+.catalog__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  gap: 20px;
+  transition: opacity 0.2s var(--ease);
+  margin-bottom: 20px;
+}
+
+.catalog__grid.is-loading {
+  opacity: 0.45;
+}
+
+.catalog__grid .supplier-card,
+.catalog__grid .discover-card {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.65s var(--ease), transform 0.65s var(--ease), border-color 0.25s var(--ease), box-shadow 0.25s var(--ease);
+}
+
+.catalog__grid.is-visible .supplier-card,
+.catalog__grid.is-visible .discover-card {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .catalog__grid .supplier-card,
+  .catalog__grid .discover-card {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.catalog__section-title {
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--ink-2);
+  margin: 28px 0 16px;
+}
+
+.catalog__recommendation {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 18px 22px;
+  border-radius: var(--r-lg);
+  background: var(--dark-card);
+  color: var(--on-dark);
+  border: 1px solid var(--cyan-dark);
+  margin-bottom: 24px;
+}
+
+.catalog__recommendation-label {
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--lime);
+}
+
+.catalog__recommendation p {
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--on-dark-2);
+}
+
+.catalog__web-status {
+  font-size: 13.5px;
+  color: var(--ink-3);
+  margin-bottom: 16px;
+}
+
+.catalog__empty,
+.catalog__error {
+  font-size: 15px;
+  color: var(--ink-3);
+  padding-block: 40px;
+}
+
+.catalog__error {
+  color: var(--error);
+}
+
+/* A compact first screen keeps the search and first results in view. */
+.catalog { padding-block: clamp(28px, 4vw, 48px) 88px; }
+.catalog__head { margin-bottom: 24px; align-items: end; }
+.catalog__head h1 { max-width: none; font-size: clamp(32px, 4.4vw, 46px); line-height: 1.12; letter-spacing: -0.025em; }
+.catalog__head p { color: var(--ink-2); line-height: 1.55; margin-top: 8px; }
+.catalog__layout { gap: 24px; grid-template-columns: 244px minmax(0, 1fr); }
+.catalog__results-head { min-height: 48px; }
+.catalog__count { color: var(--ink-2); font-weight: 500; }
+.catalog__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.catalog__grid.is-visible .supplier-card:hover,
+.catalog__grid.is-visible .discover-card:hover { transform: translateY(-4px); }
+.catalog__more { display: flex; align-items: center; justify-content: center; gap: 16px; margin: 12px 0 32px; }
+.catalog__more span { color: var(--ink-3); font-size: 13px; }
+@media (max-width: 950px) { .catalog__grid { grid-template-columns: 1fr; } }
+@media (max-width: 860px) { .catalog__layout { grid-template-columns: 1fr; } }
+@media (max-width: 600px) {
+  .catalog__head { gap: 16px; }
+  .catalog__head .btn { width: 100%; justify-content: center; }
+  .catalog__results-head .btn { width: 100%; justify-content: center; }
+  .catalog__more { flex-direction: column; gap: 8px; }
+}
+
+.catalog__recommendation { margin-bottom: 16px; padding: 16px 20px; border-color: #3b5b5d; }
+.catalog__recommendation-label { color: var(--cyan); font-size: 12px; }
+.catalog__recommendation p { color: #f0f3f3; }
+.catalog__featured { margin-bottom: 16px; }
+.catalog__featured .supplier-card, .catalog__featured .discover-card { width: 100%; }

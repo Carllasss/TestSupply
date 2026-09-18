@@ -1,0 +1,128 @@
+@import url('https://fonts.googleapis.com/css2?family=Onest:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+  --cyan: #00ffff;
+  --cyan-dark: #00d6d6;
+  --lime: #b1ec52;
+  --ink: #111111;
+  --ink-2: #424242;
+  --ink-3: #797979;
+  --line: #ececec;
+  --surface: #ffffff;
+  --surface-soft: #fafafa;
+  --dark: #222222;
+  --dark-2: #26272c;
+  --dark-card: #1b1b1b;
+  --on-dark: #ffffff;
+  --on-dark-2: #b6bfc9;
+  --on-dark-3: #a4a4a4;
+  --line-dark: #424242;
+  --error: #ff2f2f;
+  --container: 1120px;
+  --gutter: 20px;
+  --r-sm: 8px;
+  --r-lg: 16px;
+  --r-pill: 100px;
+  --font: 'Onest', 'Helvetica Neue', Arial, sans-serif;
+  --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --dur: 0.2s;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background: var(--surface);
+  color: var(--ink);
+  font-family: var(--font);
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+  position: relative;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(1000px circle at 90% -10%, rgba(0, 255, 255, 0.14), transparent 55%),
+    radial-gradient(800px circle at -10% 20%, rgba(177, 236, 82, 0.12), transparent 55%),
+    radial-gradient(700px circle at 50% 100%, rgba(0, 255, 255, 0.08), transparent 60%),
+    radial-gradient(circle at 1px 1px, rgba(17, 17, 17, 0.05) 1px, transparent 0);
+  background-size: auto, auto, auto, 28px 28px;
+}
+
+::selection {
+  background: var(--cyan);
+  color: var(--ink);
+}
+
+a {
+  color: inherit;
+}
+
+h1, h2, h3 {
+  font-family: var(--font);
+  margin: 0;
+  text-wrap: balance;
+  font-weight: 400;
+}
+
+p {
+  margin: 0;
+}
+
+button, input, select, textarea {
+  font-family: var(--font);
+}
+
+:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+.page-in {
+  opacity: 0;
+  transform: translateY(10px);
+  animation: page-in 0.5s var(--ease) forwards;
+}
+
+@keyframes page-in {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.card-in {
+  animation: card-in 0.45s var(--ease) both;
+}
+
+@keyframes card-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.container {
+  width: 100%;
+  max-width: calc(var(--container) + var(--gutter) * 2);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}

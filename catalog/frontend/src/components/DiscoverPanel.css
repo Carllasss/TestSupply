@@ -1,0 +1,136 @@
+.discover__form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 640px;
+}
+
+.discover__input {
+  width: 100%;
+  font-size: 15px;
+  color: var(--ink);
+  background: var(--surface-soft);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  padding: 14px 16px;
+}
+
+.discover__input:focus {
+  outline: none;
+  border-color: var(--cyan-dark);
+  background: var(--surface);
+}
+
+.discover__form .btn {
+  align-self: flex-start;
+}
+
+.discover__error {
+  color: var(--error);
+  font-size: 14.5px;
+  margin-top: 20px;
+  max-width: 640px;
+}
+
+.discover__query-used {
+  font-size: 13px;
+  color: var(--ink-3);
+  margin-top: 24px;
+}
+
+.discover__empty {
+  font-size: 14.5px;
+  color: var(--ink-3);
+  margin-top: 12px;
+}
+
+.discover__list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.discover-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 24px;
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  box-shadow: 0 1px 2px rgba(17, 17, 17, 0.04), 0 8px 24px rgba(17, 17, 17, 0.06);
+  transition: transform 0.25s var(--ease), border-color 0.25s var(--ease), box-shadow 0.25s var(--ease);
+}
+
+.discover-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--cyan-dark);
+  box-shadow: 0 4px 10px rgba(17, 17, 17, 0.05), 0 18px 34px rgba(17, 17, 17, 0.1);
+}
+
+.discover-card__top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.discover-card__domain {
+  font-size: 12.5px;
+  color: var(--cyan-dark);
+  text-decoration: none;
+}
+
+.discover-card__domain:hover {
+  text-decoration: underline;
+}
+
+.discover-card__badge {
+  font-size: 11px;
+  color: var(--ink-3);
+  border: 1px solid var(--line);
+  border-radius: var(--r-pill);
+  padding: 2px 9px;
+  white-space: nowrap;
+}
+
+.discover-card__title {
+  font-size: 17px;
+  line-height: 1.3;
+}
+
+.discover-card__desc {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+
+.discover-card__error {
+  font-size: 13px;
+  color: var(--error);
+}
+
+.discover-card__actions {
+  margin-top: auto;
+  padding-top: 6px;
+}
+
+.discover-card__added {
+  font-size: 13.5px;
+  color: var(--cyan-dark);
+  text-decoration: none;
+}
+
+.discover-card__added:hover {
+  text-decoration: underline;
+}
+
+.discover-card--recommended, .discover-card--recommended:hover {
+  border-color: var(--cyan-dark);
+  border-left-width: 4px;
+  background: linear-gradient(140deg, #ecffff 0, #fff 42%);
+  box-shadow: 0 12px 30px -20px rgba(0, 130, 135, .38);
+}
+.discover-card__pick { flex: none; font-size: 12px; font-weight: 600; color: #075d62; background: #c8f7f7; border-radius: var(--r-pill); padding: 3px 10px; }

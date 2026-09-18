@@ -1,0 +1,45 @@
+.compare-bar {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 14px 20px;
+  background: var(--ink);
+  color: var(--on-dark);
+  border-radius: var(--r-pill);
+  box-shadow: 0 20px 40px -20px rgba(0, 0, 0, 0.4);
+  z-index: 150;
+  font-size: 14px;
+}
+
+.compare-bar__actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.compare-bar__clear {
+  font-family: var(--font);
+  font-size: 13.5px;
+  color: var(--on-dark-3);
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.compare-bar__clear:hover {
+  color: var(--on-dark);
+}
+
+.compare-bar .btn {
+  padding: 9px 18px;
+  font-size: 14px;
+}
+
+@media (max-width: 600px) {
+  .compare-bar { left: 12px; right: 12px; bottom: 12px; transform: none; border-radius: 14px; flex-direction: column; align-items: stretch; gap: 10px; }
+  .compare-bar__actions { justify-content: space-between; }
+}
