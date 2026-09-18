@@ -47,7 +47,7 @@ services:
       DATABASE_URL: postgresql://suppliers:suppliers@postgres:5432/suppliers
       REDIS_URL: redis://redis:6379/0
       QDRANT_URL: http://qdrant:6333
-      OPENAI_PROXY_URL: socks5://shadowsocks:1080
+      OUTBOUND_PROXY_URL: socks5://shadowsocks:1080
     volumes:
       - fastembed_cache:/root/.cache/fastembed_cache
     depends_on:

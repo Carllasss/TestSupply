@@ -54,7 +54,7 @@
   border: 1px solid var(--line);
   text-align: left;
   vertical-align: top;
-  min-width: 180px;
+  min-width: 200px;
 }
 
 .compare-page__table th {
@@ -110,6 +110,6 @@
 .compare-page__table th.compare-page__winner { background: #d9fafa; border-top: 3px solid var(--cyan-dark); }
 .compare-page__table tbody tr:nth-child(even) td.compare-page__winner,
 .compare-page__table tbody tr:nth-child(odd) td.compare-page__winner { background: #effcfc; }
-.compare-page__winner-badge { display: table; margin-top: 8px; padding: 5px 10px; border-radius: var(--r-pill); background: #087f84; color: #fff; font-size: 12px; font-weight: 700; white-space: nowrap; }
+.compare-page__winner-badge { display: table; margin-top: 10px; padding: 7px 16px; border-radius: var(--r-pill); background: #087f84; color: #fff; font-size: 13px; font-weight: 700; white-space: nowrap; }
 .compare-page__recommended-name { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; font-size: 19px; font-weight: 600; }
-.compare-page__recommended-name span { padding: 4px 8px; border-radius: var(--r-pill); background: #087f84; color: #fff; font-size: 11px; letter-spacing: 0; text-transform: none; }
+.compare-page__recommended-name span { padding: 6px 14px; border-radius: var(--r-pill); background: #087f84; color: #fff; font-size: 12px; letter-spacing: 0; text-transform: none; white-space: nowrap; }

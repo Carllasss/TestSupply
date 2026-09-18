@@ -4,6 +4,7 @@ from urllib.parse import parse_qs, urlparse
 import httpx
 from bs4 import BeautifulSoup
 
+from app.core.config import get_settings
 from app.services.extraction_service import ExtractionError, extract_supplier_fields, fetch_page_text
 from app.services.supplier_service import KnownIdentity
 
@@ -48,13 +49,14 @@ def build_web_query(user_query: str, region: str | None = None) -> str:
 
 
 def duckduckgo_search(query: str, max_results: int = 10) -> list[dict]:
+    proxy = get_settings().outbound_proxy_url or None
     try:
-        response = httpx.post(
-            "https://lite.duckduckgo.com/lite/",
-            data={"q": query},
-            timeout=10.0,
-            headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"},
-        )
+        with httpx.Client(proxy=proxy, timeout=10.0) as client:
+            response = client.post(
+                "https://lite.duckduckgo.com/lite/",
+                data={"q": query},
+                headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"},
+            )
         response.raise_for_status()
     except httpx.HTTPError:
         return []
