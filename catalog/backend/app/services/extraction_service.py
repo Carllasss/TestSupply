@@ -1,5 +1,8 @@
+import ipaddress
 import json
 import re
+import socket
+from urllib.parse import urlparse
 
 import httpx
 from bs4 import BeautifulSoup
@@ -8,6 +11,24 @@ from app.core.categories import CATEGORY_OPTIONS
 from app.core.config import get_settings
 from app.schemas.supplier import SupplierCreate
 from app.services.llm_client import get_llm_client, get_llm_model
+
+
+def _assert_public_http_url(url: str) -> None:
+    """Block SSRF: reject non-http(s) schemes and hosts that resolve to
+    private/loopback/link-local addresses (internal services, docker network)."""
+    parsed = urlparse(url)
+    if parsed.scheme not in ("http", "https") or not parsed.hostname:
+        raise ExtractionError("Разрешены только http/https ссылки")
+
+    try:
+        addrinfo = socket.getaddrinfo(parsed.hostname, None)
+    except socket.gaierror as exc:
+        raise ExtractionError(f"Не удалось разрешить адрес: {exc}") from exc
+
+    for *_, sockaddr in addrinfo:
+        ip = ipaddress.ip_address(sockaddr[0])
+        if not ip.is_global:
+            raise ExtractionError("Ссылки на внутренние/локальные адреса запрещены")
 
 
 def _extract_json_block(text: str) -> str:
@@ -38,13 +59,17 @@ class ExtractionError(Exception):
 
 
 def fetch_page_text(url: str, max_chars: int = 6000) -> str:
+    _assert_public_http_url(url)
     try:
-        response = httpx.get(
-            url,
-            timeout=10.0,
-            follow_redirects=True,
-            headers={"User-Agent": "Mozilla/5.0 (supplier-catalog-bot)"},
-        )
+        with httpx.Client(follow_redirects=False, timeout=10.0) as client:
+            headers = {"User-Agent": "Mozilla/5.0 (supplier-catalog-bot)"}
+            for _ in range(5):
+                response = client.get(url, headers=headers)
+                if response.is_redirect:
+                    url = str(response.next_request.url)
+                    _assert_public_http_url(url)
+                    continue
+                break
         response.raise_for_status()
     except httpx.HTTPError as exc:
         raise ExtractionError(f"Не удалось загрузить страницу: {exc}") from exc

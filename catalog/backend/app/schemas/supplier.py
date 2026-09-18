@@ -1,6 +1,16 @@
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
+
+
+def _http_url_or_none(value: str | None) -> str | None:
+    """Drop anything that isn't a plain http(s) link (blocks javascript:/data: URIs
+    reaching an <a href> on the frontend)."""
+    if not value:
+        return value
+    if not value.lower().startswith(("http://", "https://")):
+        return None
+    return value
 
 
 class SupplierBase(BaseModel):
@@ -18,6 +28,11 @@ class SupplierBase(BaseModel):
     delivery_terms: str | None = None
     notes: str | None = None
 
+    @field_validator("website")
+    @classmethod
+    def _validate_website(cls, value: str | None) -> str | None:
+        return _http_url_or_none(value)
+
 
 class SupplierCreate(SupplierBase):
     pass
@@ -25,6 +40,11 @@ class SupplierCreate(SupplierBase):
 
 class ConfirmCandidateRequest(SupplierBase):
     source_url: str | None = None
+
+    @field_validator("source_url")
+    @classmethod
+    def _validate_source_url(cls, value: str | None) -> str | None:
+        return _http_url_or_none(value)
 
 
 class SupplierOut(SupplierBase):
@@ -62,6 +82,11 @@ class DiscoverCandidate(BaseModel):
     already_in_catalog: bool
     preview: SupplierCreate | None = None
     error: str | None = None
+
+    @field_validator("url")
+    @classmethod
+    def _validate_url(cls, value: str) -> str:
+        return _http_url_or_none(value) or ""
 
 
 class DiscoverResponse(BaseModel):
