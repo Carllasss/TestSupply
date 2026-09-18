@@ -30,9 +30,10 @@ services:
   # OpenAI traffic out through a Shadowsocks proxy. Only used when
   # SHADOWSOCKS_SERVER (root .env, gitignored) is set.
   shadowsocks:
-    image: ghcr.io/shadowsocks/ssrust:latest
+    image: teddysun/shadowsocks-rust:latest
+    entrypoint: []
     command: >
-      sslocal --local-addr 0.0.0.0:1080 --local-protocol socks
+      sslocal --local-addr 0.0.0.0:1080 --protocol socks
       --server-addr ${SHADOWSOCKS_SERVER:-127.0.0.1:0}
       --encrypt-method ${SHADOWSOCKS_METHOD:-none}
       --password ${SHADOWSOCKS_PASSWORD:-unset}
