@@ -26,6 +26,18 @@ services:
     volumes:
       - qdrant_data:/qdrant/storage
 
+  # OpenAI's API blocks Russian IPs; this sidecar tunnels just the backend's
+  # OpenAI traffic out through a Shadowsocks proxy. Only used when
+  # SHADOWSOCKS_SERVER (root .env, gitignored) is set.
+  shadowsocks:
+    image: ghcr.io/shadowsocks/ssrust:latest
+    command: >
+      sslocal --local-addr 0.0.0.0:1080 --local-protocol socks
+      --server-addr ${SHADOWSOCKS_SERVER:-127.0.0.1:0}
+      --encrypt-method ${SHADOWSOCKS_METHOD:-none}
+      --password ${SHADOWSOCKS_PASSWORD:-unset}
+    restart: unless-stopped
+
   backend:
     build: ./catalog/backend
     env_file:
@@ -34,6 +46,7 @@ services:
       DATABASE_URL: postgresql://suppliers:suppliers@postgres:5432/suppliers
       REDIS_URL: redis://redis:6379/0
       QDRANT_URL: http://qdrant:6333
+      OPENAI_PROXY_URL: socks5://shadowsocks:1080
     volumes:
       - fastembed_cache:/root/.cache/fastembed_cache
     depends_on:
@@ -42,6 +55,8 @@ services:
       redis:
         condition: service_healthy
       qdrant:
+        condition: service_started
+      shadowsocks:
         condition: service_started
 
   frontend:

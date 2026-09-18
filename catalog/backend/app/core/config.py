@@ -12,6 +12,7 @@ class Settings(BaseSettings):
 
     openai_api_key: str = ""
     openai_model: str = "gpt-4o-mini"
+    openai_proxy_url: str = ""
 
     llm_provider: str = "openai"
     llm_base_url: str = "http://localhost:11434/v1"
