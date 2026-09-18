@@ -9,6 +9,7 @@ import { CompareBar } from '../components/CompareBar'
 import { Button } from '../components/Button'
 import { sortBySupplierField } from '../utils/parseNumber'
 import { useStagger } from '../hooks/useStagger'
+import { useTypewriter } from '../hooks/useTypewriter'
 import { Spinner } from '../components/Spinner'
 import { SearchTicker } from '../components/SearchTicker'
 import './CatalogPage.css'
@@ -47,6 +48,7 @@ export function CatalogPage() {
   const [selectedIds, setSelectedIds] = useState(saved.selectedIds || [])
   const [visibleCount, setVisibleCount] = useState(saved.visibleCount || PAGE_SIZE)
   const [searchLog, setSearchLog] = useState([])
+  const [streamingRecommendation, pushStreamingChunk, resetStreamingRecommendation] = useTypewriter()
   const requestId = useRef(0)
   const webRequestId = useRef(0)
   const stopStream = useRef(null)
@@ -107,6 +109,7 @@ export function CatalogPage() {
     setFeaturedSupplier(null)
     setWebStatus('idle')
     setSearchLog([])
+    resetStreamingRecommendation()
   }
 
   const handleSearchSubmit = ({ query: newQuery, city: newCity }) => {
@@ -136,15 +139,21 @@ export function CatalogPage() {
     setRecommendedCandidateUrl(null)
     setFeaturedSupplier(null)
     setSearchLog([])
+    resetStreamingRecommendation()
 
     stopStream.current = webSearchStream({ category, region: city, q: query }, {
       onEvent: (event) => {
         if (currentRequest !== webRequestId.current) return
+        if (event.type === 'chunk') {
+          pushStreamingChunk(event.text)
+          return
+        }
         const line = describeEvent(event)
         if (line) setSearchLog((prev) => [...prev, line])
       },
       onDone: (data) => {
         if (currentRequest !== webRequestId.current) return
+        resetStreamingRecommendation()
         setWebResults(data.web.filter((c) => !c.already_in_catalog && c.preview))
         setRecommendation(data.recommendation)
         setRecommendedSupplierId(data.recommended_supplier_id ?? null)
@@ -159,7 +168,10 @@ export function CatalogPage() {
         }
       },
       onError: () => {
-        if (currentRequest === webRequestId.current) setWebStatus('error')
+        if (currentRequest === webRequestId.current) {
+          resetStreamingRecommendation()
+          setWebStatus('error')
+        }
       },
     })
   }
@@ -263,6 +275,13 @@ export function CatalogPage() {
               <div className="catalog__recommendation card-in">
                 <span className="catalog__recommendation-label">Рекомендация по запросу</span>
                 <p>{recommendation}</p>
+              </div>
+            )}
+
+            {webStatus === 'loading' && streamingRecommendation && (
+              <div className="catalog__recommendation catalog__recommendation--streaming card-in">
+                <span className="catalog__recommendation-label">Собираю рекомендацию…</span>
+                <p>{streamingRecommendation}<span className="catalog__recommendation-cursor" /></p>
               </div>
             )}
 

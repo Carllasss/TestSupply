@@ -21,7 +21,7 @@ from app.schemas.supplier import (
     WebSearchResponse,
 )
 from app.services.extraction_service import ExtractionError, extract_supplier_fields, fetch_page_text
-from app.services.recommendation_service import Recommendation, compare_suppliers, recommend_supplier
+from app.services.recommendation_service import Recommendation, compare_suppliers, recommend_supplier, recommend_supplier_stream
 from app.services.supplier_service import SupplierService
 from app.services.web_search_service import discover_suppliers, discover_suppliers_stream
 
@@ -129,7 +129,14 @@ def web_search_stream(
                     yield f"data: {json.dumps(event, ensure_ascii=False)}\n\n"
 
         yield f"data: {json.dumps({'type': 'recommending'}, ensure_ascii=False)}\n\n"
-        rec = recommend_supplier(q, catalog, web_candidates)
+        rec_stream = recommend_supplier_stream(q, catalog, web_candidates)
+        rec = Recommendation()
+        try:
+            while True:
+                event = next(rec_stream)
+                yield f"data: {json.dumps(event, ensure_ascii=False)}\n\n"
+        except StopIteration as stop:
+            rec = stop.value or Recommendation()
         final = {
             "type": "done",
             "web": web_candidates,

@@ -167,5 +167,19 @@
 .catalog__recommendation { margin-bottom: 16px; padding: 16px 20px; border-color: #3b5b5d; }
 .catalog__recommendation-label { color: var(--cyan); font-size: 12px; }
 .catalog__recommendation p { color: #f0f3f3; }
+.catalog__recommendation--streaming .catalog__recommendation-label { color: var(--lime); }
+.catalog__recommendation-cursor {
+  display: inline-block;
+  width: 8px;
+  height: 15px;
+  margin-left: 2px;
+  background: var(--lime);
+  vertical-align: text-bottom;
+  animation: catalog-cursor-blink 0.9s step-end infinite;
+}
+@keyframes catalog-cursor-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
 .catalog__featured { margin-bottom: 16px; }
 .catalog__featured .supplier-card, .catalog__featured .discover-card { width: 100%; }
