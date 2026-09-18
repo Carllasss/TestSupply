@@ -23,7 +23,7 @@ export function Skills() {
       <div className="container">
         <Reveal className="section-head">
           <h2>Навыки</h2>
-          <p>Технологии, с которыми работал в проектах.</p>
+          <p>Технологии и инструменты, с которыми работаю.</p>
         </Reveal>
         <div className="skills">
           {skills.map((group) => (
@@ -33,6 +33,10 @@ export function Skills() {
             </div>
           ))}
         </div>
+        <Reveal className="skills-section__learning">
+          <span>Дополнительно</span>
+          <p>Знаю Go. Прошёл Ozon Golang Route уровня Middle.</p>
+        </Reveal>
       </div>
     </section>
   )

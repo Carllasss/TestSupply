@@ -75,3 +75,26 @@
 @media (prefers-reduced-motion: reduce) {
   .pill { opacity: 1; transform: none; }
 }
+
+.skills-section__learning {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  margin-top: 40px;
+  padding-top: 20px;
+  border-top: 1px solid var(--line-dark);
+}
+
+.skills-section__learning span {
+  color: var(--cyan);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
+
+.skills-section__learning p {
+  color: var(--on-dark-2);
+  font-size: 15px;
+}

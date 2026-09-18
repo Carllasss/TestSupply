@@ -85,8 +85,8 @@ export const experience = [
 
 export const skills = [
   {
-    group: 'Python / Backend',
-    items: ['Python', 'FastAPI', 'REST API', 'gRPC', 'AsyncIO', 'Celery', 'Pytest'],
+    group: 'Backend',
+    items: ['Python', 'Go', 'FastAPI', 'REST API', 'gRPC', 'AsyncIO', 'Celery', 'Pytest'],
   },
   {
     group: 'Данные и инфраструктура',
