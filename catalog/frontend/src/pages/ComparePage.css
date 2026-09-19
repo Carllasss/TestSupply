@@ -40,10 +40,14 @@
 .compare-page__table-wrap {
   overflow-x: auto;
   margin-bottom: 28px;
+  -webkit-overflow-scrolling: touch;
 }
 
 .compare-page__table {
-  width: 100%;
+  /* min-width (not width): lets the table grow past the wrapper on narrow
+     screens so columns keep their min-width and scroll instead of squishing. */
+  min-width: 100%;
+  width: max-content;
   border-collapse: collapse;
   font-size: 14px;
 }
@@ -113,3 +117,29 @@
 .compare-page__winner-badge { display: table; margin-top: 10px; padding: 7px 16px; border-radius: var(--r-pill); background: #087f84; color: #fff; font-size: 13px; font-weight: 700; white-space: nowrap; }
 .compare-page__recommended-name { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; font-size: 19px; font-weight: 600; }
 .compare-page__recommended-name span { padding: 6px 14px; border-radius: var(--r-pill); background: #087f84; color: #fff; font-size: 12px; letter-spacing: 0; text-transform: none; white-space: nowrap; }
+
+@media (max-width: 700px) {
+  .compare-page__table th,
+  .compare-page__table td {
+    min-width: 150px;
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+  .compare-page__table th:first-child,
+  .compare-page__table td:first-child {
+    min-width: 120px;
+  }
+  .compare-page__table-wrap {
+    position: relative;
+  }
+  .compare-page__table-wrap::after {
+    content: '⇠ свайп ⇢';
+    display: block;
+    text-align: center;
+    padding: 6px;
+    font-size: 11px;
+    color: var(--ink-3);
+    background: var(--surface-soft);
+    border-top: 1px solid var(--line);
+  }
+}
