@@ -53,6 +53,7 @@ export function CatalogPage() {
   const requestId = useRef(0)
   const webRequestId = useRef(0)
   const stopStream = useRef(null)
+  const [filtersOpen, setFiltersOpen] = useState(() => window.innerWidth > 860)
 
   const runCatalogSearch = (q, region, price, moq, nextCategory = category) => {
     const currentRequest = ++requestId.current
@@ -240,19 +241,30 @@ export function CatalogPage() {
         <SearchBar query={query} city={city} cities={facets.regions} onSubmit={handleSearchSubmit} />
 
         <div className="catalog__layout">
-          <div className="page-in" style={{ animationDelay: '80ms' }}>
-            <Filters
-              facets={facets}
-              category={category}
-              sort={sort}
-              hasPrice={hasPrice}
-              hasMoq={hasMoq}
-              onCategory={(value) => { clearWebSearch(); setCategory(value) }}
-              onSort={setSort}
-              onHasPrice={(value) => { clearWebSearch(); setHasPrice(value) }}
-              onHasMoq={(value) => { clearWebSearch(); setHasMoq(value) }}
-              onReset={resetFilters}
-            />
+          <div className="page-in catalog__filters-col" style={{ animationDelay: '80ms' }}>
+            <button
+              type="button"
+              className="catalog__filters-toggle"
+              onClick={() => setFiltersOpen((open) => !open)}
+              aria-expanded={filtersOpen}
+            >
+              Фильтры
+              <span className={`catalog__filters-toggle-icon ${filtersOpen ? 'is-open' : ''}`} aria-hidden="true" />
+            </button>
+            <div className={`catalog__filters-panel ${filtersOpen ? 'is-open' : ''}`}>
+              <Filters
+                facets={facets}
+                category={category}
+                sort={sort}
+                hasPrice={hasPrice}
+                hasMoq={hasMoq}
+                onCategory={(value) => { clearWebSearch(); setCategory(value) }}
+                onSort={setSort}
+                onHasPrice={(value) => { clearWebSearch(); setHasPrice(value) }}
+                onHasMoq={(value) => { clearWebSearch(); setHasMoq(value) }}
+                onReset={resetFilters}
+              />
+            </div>
           </div>
 
           <div className="catalog__results">
