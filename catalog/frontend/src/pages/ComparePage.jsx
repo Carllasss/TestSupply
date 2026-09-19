@@ -105,6 +105,35 @@ export function ComparePage() {
           </table>
         </div>
 
+        {/* Same data as the table above, laid out as stacked cards — swapped
+            in on narrow screens via CSS so nothing needs a horizontal swipe. */}
+        <div className="compare-page__cards">
+          {suppliers.map((s) => (
+            <div key={s.id} className={`compare-page__card ${s.id === recommendedSupplierId ? 'compare-page__card--winner' : ''}`}>
+              <div className="compare-page__card-head">
+                <Link to={`/suppliers/${s.id}`}>{s.name}</Link>
+                {s.id === recommendedSupplierId && <span className="compare-page__winner-badge">Выбор ИИ</span>}
+              </div>
+              <dl className="compare-page__card-rows">
+                {ROWS.map(([key, label]) => (
+                  <div className="compare-page__card-row" key={key}>
+                    <dt>{label}</dt>
+                    <dd>{s[key] || DASH}</dd>
+                  </div>
+                ))}
+                <div className="compare-page__card-row">
+                  <dt>Контакты</dt>
+                  <dd>{contactsOf(s)}</dd>
+                </div>
+                <div className="compare-page__card-row">
+                  <dt>Источник</dt>
+                  <dd>{s.source_url ? <a href={s.source_url} target="_blank" rel="noreferrer">ссылка</a> : DASH}</dd>
+                </div>
+              </dl>
+            </div>
+          ))}
+        </div>
+
         {recommendation && (
           <div className="compare-page__recommendation card-in">
             <span>Что подходит лучше</span>

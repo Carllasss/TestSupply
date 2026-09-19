@@ -118,28 +118,75 @@
 .compare-page__recommended-name { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; font-size: 19px; font-weight: 600; }
 .compare-page__recommended-name span { padding: 6px 14px; border-radius: var(--r-pill); background: #087f84; color: #fff; font-size: 12px; letter-spacing: 0; text-transform: none; white-space: nowrap; }
 
+/* Stacked cards — one per supplier, all attributes listed vertically.
+   Hidden on desktop, where the table already lays this out clearly. */
+.compare-page__cards {
+  display: none;
+}
+
+.compare-page__card {
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+
+.compare-page__card--winner {
+  border-color: var(--cyan-dark);
+  box-shadow: 0 0 0 1px var(--cyan-dark);
+}
+
+.compare-page__card-head {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 14px 16px;
+  background: #eafafa;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.compare-page__card--winner .compare-page__card-head {
+  background: #d9fafa;
+}
+
+.compare-page__card-head a {
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-color: var(--line);
+}
+
+.compare-page__card-rows {
+  margin: 0;
+}
+
+.compare-page__card-row {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 16px;
+  border-top: 1px solid var(--line);
+}
+
+.compare-page__card-row dt {
+  font-size: 12px;
+  color: var(--ink-3);
+}
+
+.compare-page__card-row dd {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--ink);
+}
+
 @media (max-width: 700px) {
-  .compare-page__table th,
-  .compare-page__table td {
-    min-width: 150px;
-    padding: 10px 12px;
-    font-size: 13px;
-  }
-  .compare-page__table th:first-child,
-  .compare-page__table td:first-child {
-    min-width: 120px;
-  }
   .compare-page__table-wrap {
-    position: relative;
+    display: none;
   }
-  .compare-page__table-wrap::after {
-    content: '⇠ свайп ⇢';
+  .compare-page__cards {
     display: block;
-    text-align: center;
-    padding: 6px;
-    font-size: 11px;
-    color: var(--ink-3);
-    background: var(--surface-soft);
-    border-top: 1px solid var(--line);
   }
 }
