@@ -34,7 +34,7 @@ def upsert_supplier_vector(supplier_id: int, vector: list[float]) -> None:
     )
 
 
-def semantic_search_ids(vector: list[float], limit: int = 50, score_threshold: float = 0.55) -> list[int]:
+def semantic_search_ids(vector: list[float], limit: int = 50, score_threshold: float = 0.6) -> list[int]:
     settings = get_settings()
     client = get_client()
     hits = client.query_points(

@@ -90,12 +90,20 @@ class SupplierService:
         if not query:
             return self.repo.list_suppliers(category=category, region=region, has_price=has_price, has_moq=has_moq)
 
+        # A literal substring match on name/description is always relevant by
+        # construction (the word is right there), so union it with the
+        # semantic hits instead of relying on one similarity cutoff to work
+        # for both short single-word queries and longer descriptive ones.
+        literal_matches = self.repo.list_suppliers(category=category, region=region, query=query, has_price=has_price, has_moq=has_moq)
+
         try:
             vector = embed_query(query)
             ids = vector_store.semantic_search_ids(vector, limit=50)
-            suppliers = self.repo.get_many(ids)
+            semantic_matches = self.repo.get_many(ids)
+            seen_ids = {s.id for s in literal_matches}
+            suppliers = literal_matches + [s for s in semantic_matches if s.id not in seen_ids]
         except Exception:
-            return self.repo.list_suppliers(category=category, region=region, query=query, has_price=has_price, has_moq=has_moq)
+            suppliers = literal_matches
 
         if category:
             suppliers = [s for s in suppliers if s.category == category]
