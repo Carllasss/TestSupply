@@ -187,7 +187,39 @@ export function CatalogPage() {
     setSort('')
     setHasPrice(false)
     setHasMoq(false)
+    setQuery('')
+    setCity('')
+    runCatalogSearch('', '', false, false, '')
   }
+
+  const removeCityFilter = () => {
+    clearWebSearch()
+    setCity('')
+    runCatalogSearch(query, '', hasPrice, hasMoq)
+  }
+
+  const removeQueryFilter = () => {
+    clearWebSearch()
+    setQuery('')
+    runCatalogSearch('', city, hasPrice, hasMoq)
+  }
+
+  const searchWithoutCity = () => {
+    clearWebSearch()
+    setCity('')
+    runCatalogSearch(query, '', hasPrice, hasMoq)
+  }
+
+  const activeFilters = useMemo(() => {
+    const list = []
+    if (query) list.push({ key: 'query', label: `«${query}»`, onRemove: removeQueryFilter })
+    if (city) list.push({ key: 'city', label: city, onRemove: removeCityFilter })
+    if (category) list.push({ key: 'category', label: category, onRemove: () => { clearWebSearch(); setCategory('') } })
+    if (hasPrice) list.push({ key: 'hasPrice', label: 'Есть цена', onRemove: () => { clearWebSearch(); setHasPrice(false) } })
+    if (hasMoq) list.push({ key: 'hasMoq', label: 'Есть партия', onRemove: () => { clearWebSearch(); setHasMoq(false) } })
+    return list
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [query, city, category, hasPrice, hasMoq])
 
   const toggleSelect = (id) => {
     setSelectedIds((prev) => (
@@ -202,7 +234,8 @@ export function CatalogPage() {
   }
 
   const emptyMessage = useMemo(() => {
-    if (category || city || query || hasPrice || hasMoq) return 'По этому запросу в каталоге пока ничего нет.'
+    if (city) return `Точных совпадений в ${city} нет.`
+    if (category || query || hasPrice || hasMoq) return 'По этому запросу в каталоге пока ничего нет.'
     return 'В базе пока нет поставщиков.'
   }, [category, city, query, hasPrice, hasMoq])
 
@@ -239,6 +272,16 @@ export function CatalogPage() {
         </div>
 
         <SearchBar query={query} city={city} cities={facets.regions} onSubmit={handleSearchSubmit} />
+
+        {activeFilters.length > 0 && (
+          <div className="catalog__active-filters">
+            {activeFilters.map((f) => (
+              <button key={f.key} type="button" className="catalog__filter-tag" onClick={f.onRemove}>
+                {f.label} <span aria-hidden="true">×</span>
+              </button>
+            ))}
+          </div>
+        )}
 
         <div className="catalog__layout">
           <div className="page-in catalog__filters-col" style={{ animationDelay: '80ms' }}>
@@ -298,7 +341,23 @@ export function CatalogPage() {
             )}
 
             {status === 'ready' && sortedsuppliers.length === 0 && (
-              <p className="catalog__empty">{emptyMessage}</p>
+              <div className="catalog__empty-block">
+                <p className="catalog__empty">{emptyMessage}</p>
+                {(city || (query && webStatus !== 'loading' && webStatus !== 'ready')) && (
+                  <div className="catalog__empty-actions">
+                    {city && (
+                      <Button variant="outline" type="button" onClick={searchWithoutCity}>
+                        Показать без ограничения по городу
+                      </Button>
+                    )}
+                    {query && webStatus !== 'loading' && webStatus !== 'ready' && (
+                      <Button variant="cyan" type="button" onClick={handleWebSearch}>
+                        Поискать в интернете
+                      </Button>
+                    )}
+                  </div>
+                )}
+              </div>
             )}
 
             {featuredCatalogSupplier && (

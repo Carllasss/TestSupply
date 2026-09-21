@@ -1,10 +1,15 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Button } from './Button'
 import './SearchBar.css'
 
 export function SearchBar({ query, city, cities = [], onSubmit }) {
   const [draftQuery, setDraftQuery] = useState(query)
   const [draftCity, setDraftCity] = useState(city)
+
+  // Keep the inputs in sync when the parent clears/changes them from outside
+  // (reset button, removing an active-filter tag, etc.), not just on submit.
+  useEffect(() => setDraftQuery(query), [query])
+  useEffect(() => setDraftCity(city), [city])
 
   const handleSubmit = (e) => {
     e.preventDefault()

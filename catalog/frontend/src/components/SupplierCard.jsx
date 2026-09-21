@@ -4,7 +4,7 @@ import './SupplierCard.css'
 
 const STATUS_LABEL = {
   demo: 'демо',
-  found: 'найдено в интернете',
+  found: 'добавлено из веб-поиска',
   verified: 'проверено вручную',
 }
 
