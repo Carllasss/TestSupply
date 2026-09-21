@@ -312,49 +312,28 @@ export function CatalogPage() {
 
           <div className="catalog__results">
             {status === 'error' && (
-              <p className="catalog__error">Не получилось загрузить каталог. Проверь, что бэкенд запущен.</p>
+              <div className="catalog__error-block">
+                <p className="catalog__error">Не получилось загрузить каталог. Попробуй ещё раз.</p>
+                <Button variant="outline" type="button" onClick={() => runCatalogSearch(query, city, hasPrice, hasMoq)}>
+                  Повторить
+                </Button>
+              </div>
             )}
 
             <div className="catalog__results-head">
               <p className="catalog__count">
                 {status === 'loading' ? <Spinner label="Ищем..." /> : status === 'error' ? 'Каталог недоступен' : `Найдено в каталоге: ${sortedsuppliers.length}`}
               </p>
-              {webStatus !== 'loading' && (
-                <Button variant="outline" type="button" onClick={handleWebSearch}>
-                  {webStatus === 'error' ? 'Повторить поиск в интернете' : webStatus === 'ready' ? 'Обновить поиск в интернете' : 'Найти ещё в интернете'}
-                </Button>
-              )}
             </div>
-
-            {webStatus === 'loading' && <SearchTicker lines={searchLog} />}
-
-            {(recommendation || (webStatus === 'loading' && isRecommending)) && (
-              <div className={`catalog__recommendation ${webStatus === 'loading' ? 'catalog__recommendation--streaming' : ''} card-in`}>
-                <span className="catalog__recommendation-label">
-                  {webStatus === 'loading' ? 'Ответ ИИ · формируется' : 'Рекомендация по запросу'}
-                </span>
-                <p aria-live="polite">
-                  {streamingRecommendation || recommendation || 'Анализирую найденных поставщиков…'}
-                  {webStatus === 'loading' && <span className="catalog__recommendation-cursor" aria-hidden="true" />}
-                </p>
-              </div>
-            )}
 
             {status === 'ready' && sortedsuppliers.length === 0 && (
               <div className="catalog__empty-block">
                 <p className="catalog__empty">{emptyMessage}</p>
-                {(city || (query && webStatus !== 'loading' && webStatus !== 'ready')) && (
+                {city && (
                   <div className="catalog__empty-actions">
-                    {city && (
-                      <Button variant="outline" type="button" onClick={searchWithoutCity}>
-                        Показать без ограничения по городу
-                      </Button>
-                    )}
-                    {query && webStatus !== 'loading' && webStatus !== 'ready' && (
-                      <Button variant="cyan" type="button" onClick={handleWebSearch}>
-                        Поискать в интернете
-                      </Button>
-                    )}
+                    <Button variant="outline" type="button" onClick={searchWithoutCity}>
+                      Показать без ограничения по городу
+                    </Button>
                   </div>
                 )}
               </div>
@@ -406,6 +385,28 @@ export function CatalogPage() {
                   Показать ещё {Math.min(PAGE_SIZE, sortedsuppliers.length - visibleCount)}
                 </Button>
                 <span>Показано {visibleCount} из {sortedsuppliers.length}</span>
+              </div>
+            )}
+
+            {status === 'ready' && webStatus !== 'loading' && (
+              <div className="catalog__web-cta">
+                <Button variant="cyan" type="button" onClick={handleWebSearch}>
+                  {webStatus === 'error' ? 'Повторить поиск в интернете' : webStatus === 'ready' ? 'Обновить поиск в интернете' : 'Поискать в интернете'}
+                </Button>
+              </div>
+            )}
+
+            {webStatus === 'loading' && <SearchTicker lines={searchLog} />}
+
+            {(recommendation || (webStatus === 'loading' && isRecommending)) && (
+              <div className={`catalog__recommendation ${webStatus === 'loading' ? 'catalog__recommendation--streaming' : ''} card-in`}>
+                <span className="catalog__recommendation-label">
+                  {webStatus === 'loading' ? 'Ответ ИИ · формируется' : 'Рекомендация по запросу'}
+                </span>
+                <p aria-live="polite">
+                  {streamingRecommendation || recommendation || 'Анализирую найденных поставщиков…'}
+                  {webStatus === 'loading' && <span className="catalog__recommendation-cursor" aria-hidden="true" />}
+                </p>
               </div>
             )}
 

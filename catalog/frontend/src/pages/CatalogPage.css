@@ -187,6 +187,15 @@
   color: var(--error);
 }
 
+.catalog__error-block {
+  padding-block: 24px 40px;
+}
+
+.catalog__error-block .catalog__error {
+  padding-block: 0;
+  margin-bottom: 16px;
+}
+
 /* A compact first screen keeps the search and first results in view. */
 .catalog { padding-block: clamp(28px, 4vw, 48px) 88px; }
 .catalog__head { margin-bottom: 24px; align-items: end; }
@@ -281,4 +290,10 @@
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
+}
+
+.catalog__web-cta {
+  display: flex;
+  justify-content: center;
+  margin: 8px 0 24px;
 }
