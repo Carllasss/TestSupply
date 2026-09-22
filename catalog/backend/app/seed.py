@@ -2,8 +2,8 @@ from app.db.session import SessionLocal
 from app.repositories.supplier_repository import SupplierRepository
 from app.schemas.supplier import SupplierCreate
 from app.services import vector_store
-from app.services.embedding_service import embed_passage
-from app.services.supplier_service import supplier_embedding_text
+from app.services.embedding_service import embed_passage, embed_passages
+from app.services.supplier_service import supplier_embedding_chunks, supplier_embedding_text
 
 # Демонстрационные данные: вымышленные компании, показывают состав полей и
 # структуру карточки (status=demo).
@@ -657,6 +657,9 @@ def _insert(repo: SupplierRepository, item: dict, created_via: str, status: str)
     supplier = repo.create(data, created_via=created_via, source_url=source_url, status=status)
     try:
         vector_store.upsert_supplier_vector(supplier.id, embed_passage(supplier_embedding_text(data)))
+        chunks = supplier_embedding_chunks(data)
+        if chunks:
+            vector_store.upsert_supplier_chunk_vectors(supplier.id, embed_passages(chunks))
     except Exception:
         pass
 

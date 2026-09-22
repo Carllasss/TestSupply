@@ -1,6 +1,7 @@
-from sqlalchemy import distinct, or_, select
+from sqlalchemy import and_, distinct, or_, select
 from sqlalchemy.orm import Session
 
+from app.core.query_terms import significant_terms
 from app.db.models import Supplier
 from app.schemas.supplier import SupplierCreate
 
@@ -23,9 +24,23 @@ class SupplierRepository:
         if region:
             stmt = stmt.where(Supplier.region == region)
         if query:
-            like = f"%{query}%"
+            # Every significant word must appear *somewhere* (name, description
+            # or product_lines — not necessarily the same field), so
+            # "мясо оптом" matches a supplier whose product_lines just say
+            # "говядина, свинина" isn't the goal here — it matches one whose
+            # text literally contains "мясо" (generic filler words like
+            # "оптом" are dropped, they wouldn't discriminate anyway).
             stmt = stmt.where(
-                or_(Supplier.name.ilike(like), Supplier.description.ilike(like))
+                and_(
+                    *(
+                        or_(
+                            Supplier.name.ilike(f"%{term}%"),
+                            Supplier.description.ilike(f"%{term}%"),
+                            Supplier.product_lines.ilike(f"%{term}%"),
+                        )
+                        for term in significant_terms(query)
+                    )
+                )
             )
         if has_price is not None:
             stmt = stmt.where(Supplier.price_note.is_not(None) if has_price else Supplier.price_note.is_(None))

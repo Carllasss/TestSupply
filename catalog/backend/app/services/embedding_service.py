@@ -16,6 +16,10 @@ def embed_passage(text: str) -> list[float]:
     return vector.tolist()
 
 
+def embed_passages(texts: list[str]) -> list[list[float]]:
+    return [v.tolist() for v in get_embedder().embed(texts)]
+
+
 def embed_query(text: str) -> list[float]:
     vector = next(get_embedder().query_embed([text]))
     return vector.tolist()

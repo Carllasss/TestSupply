@@ -9,7 +9,8 @@ from app.db.models import Supplier
 from app.repositories.supplier_repository import SupplierRepository
 from app.schemas.supplier import FacetsOut, SupplierCreate, SupplierOut
 from app.services import vector_store
-from app.services.embedding_service import embed_passage, embed_query
+from app.core.query_terms import significant_terms
+from app.services.embedding_service import embed_passage, embed_passages, embed_query
 
 
 def _domain(url: str) -> str:
@@ -51,11 +52,22 @@ class KnownIdentity:
 
 FACETS_CACHE_KEY = "facets:v1"
 SEARCH_CACHE_PREFIX = "suppliers:search:"
+SEMANTIC_EXTRA_CAP = 6
 
 
 def supplier_embedding_text(data: SupplierCreate) -> str:
     parts = [data.name, data.category, data.region, data.product_lines or "", data.description, data.notes or ""]
     return ". ".join(p for p in parts if p)
+
+
+def supplier_embedding_chunks(data: SupplierCreate) -> list[str]:
+    """Short standalone phrases, one per product line — indexed as separate
+    vectors so a short query ("сыр", "пицца") can match a short chunk
+    directly instead of getting diluted against one long passage. The
+    category is deliberately excluded: it's shared by many suppliers, so
+    indexing it as its own chunk drags in the whole category for any
+    loosely-related query."""
+    return [item.strip() for item in (data.product_lines or "").split(",") if item.strip()]
 
 
 class SupplierService:
@@ -97,11 +109,21 @@ class SupplierService:
         literal_matches = self.repo.list_suppliers(category=category, region=region, query=query, has_price=has_price, has_moq=has_moq)
 
         try:
-            vector = embed_query(query)
+            # This embedding model doesn't reliably separate "relevant" from
+            # "not" for short catalog phrases — for broad single-concept
+            # words the whole catalog can land in a tight, high score band
+            # with no real gap (observed: "выпечка" scored 0.75-0.89 for
+            # over half the suppliers, packaging and drinks included). No
+            # threshold fixes that, so on top of the score cutoff, cap how
+            # many *extra* (non-literal) picks semantic search is allowed to
+            # contribute — it's a supplement to literal matching, not a
+            # second independent search.
+            vector = embed_query(" ".join(significant_terms(query)))
             ids = vector_store.semantic_search_ids(vector, limit=50)
             semantic_matches = self.repo.get_many(ids)
             seen_ids = {s.id for s in literal_matches}
-            suppliers = literal_matches + [s for s in semantic_matches if s.id not in seen_ids]
+            extra = [s for s in semantic_matches if s.id not in seen_ids][:SEMANTIC_EXTRA_CAP]
+            suppliers = literal_matches + extra
         except Exception:
             suppliers = literal_matches
 
@@ -123,6 +145,9 @@ class SupplierService:
         try:
             vector = embed_passage(supplier_embedding_text(data))
             vector_store.upsert_supplier_vector(supplier.id, vector)
+            chunks = supplier_embedding_chunks(data)
+            if chunks:
+                vector_store.upsert_supplier_chunk_vectors(supplier.id, embed_passages(chunks))
         except Exception:
             pass
         cache_delete_prefix(FACETS_CACHE_KEY)
