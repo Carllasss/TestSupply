@@ -1,0 +1,62 @@
+[
+  {
+    "query": "пицца моцарелла",
+    "expect_any": ["Mozaretti"],
+    "expect_none": ["ЛентаУпак", "СоусМастер"],
+    "max_results": 6
+  },
+  {
+    "query": "пицца",
+    "expect_any": ["Mozaretti"],
+    "expect_none": ["ЛентаУпак"],
+    "max_results": 6
+  },
+  {
+    "query": "сыр",
+    "expect_any": ["Mozaretti", "МИЛКОМ"],
+    "expect_none": [],
+    "max_results": 12
+  },
+  {
+    "query": "молоко",
+    "expect_any": ["МИЛКОМ"],
+    "expect_none": ["ЛентаУпак"],
+    "max_results": 8
+  },
+  {
+    "query": "мясо оптом",
+    "expect_any": ["Уральские фермы"],
+    "expect_none": ["ЛентаУпак", "СпецПряность", "СоусМастер"],
+    "max_results": 8
+  },
+  {
+    "query": "упаковка для доставки",
+    "expect_any": ["УпакМосТорг"],
+    "expect_none": [],
+    "max_results": 15
+  },
+  {
+    "query": "специи",
+    "expect_any": ["СпецПряность"],
+    "expect_none": ["ЛентаУпак"],
+    "max_results": 8
+  },
+  {
+    "query": "куриное филе недорого",
+    "expect_any": ["Куриный Двор"],
+    "expect_none": [],
+    "max_results": 8
+  },
+  {
+    "query": "выпечка",
+    "expect_any": ["Пекарня Онлайн", "БулкаХлеб"],
+    "expect_none": [],
+    "max_results": 15
+  },
+  {
+    "query": "зюзюблямба несуществующий товар",
+    "expect_any": [],
+    "expect_none": [],
+    "max_results": 6
+  }
+]

@@ -67,14 +67,20 @@ def upsert_supplier_chunk_vectors(supplier_id: int, vectors: list[list[float]]) 
     )
 
 
-def semantic_search_ids(
-    vector: list[float],
+def rank_hits_by_supplier(
+    hits: list[tuple[int, float]],
     limit: int = 50,
-    score_threshold: float = 0.55,
     relative_margin: float = 0.15,
 ) -> list[int]:
-    """Absolute cosine similarity isn't a reliable cutoff on its own with
-    this embedding model: for short Russian product phrases, scores for
+    """Pure ranking/dedup logic for semantic_search_ids, split out so it's
+    unit-testable without a live Qdrant instance. `hits` is a list of
+    (supplier_id, score) pairs, already restricted to points above the
+    absolute score_threshold (multiple hits per supplier_id are expected —
+    several chunks, or a chunk plus the main passage, can point at the same
+    supplier).
+
+    Absolute cosine similarity isn't a reliable cutoff on its own with this
+    embedding model: for short Russian product phrases, scores for
     genuinely unrelated items and for genuinely relevant ones both land in a
     fairly narrow, overlapping band (observed: a plastic-wrap supplier
     scored 0.62 against "пицца моцарелла", while a real mozzarella producer
@@ -84,20 +90,10 @@ def semantic_search_ids(
     that's simultaneously too loose for weak queries and too strict for
     queries with a clear best answer.
     """
-    settings = get_settings()
-    client = get_client()
-    hits = client.query_points(
-        collection_name=settings.qdrant_collection,
-        query=vector,
-        limit=limit * 4,  # oversample: several hits (chunks + passage) can map to the same supplier
-        score_threshold=score_threshold,
-    ).points
-
     best_score: dict[int, float] = {}
-    for hit in hits:
-        supplier_id = int(hit.payload.get("supplier_id", hit.id)) if hit.payload else int(hit.id)
-        if hit.score > best_score.get(supplier_id, -1.0):
-            best_score[supplier_id] = hit.score
+    for supplier_id, score in hits:
+        if score > best_score.get(supplier_id, -1.0):
+            best_score[supplier_id] = score
 
     if not best_score:
         return []
@@ -110,3 +106,25 @@ def semantic_search_ids(
         reverse=True,
     )
     return [supplier_id for supplier_id, _ in ranked[:limit]]
+
+
+def semantic_search_ids(
+    vector: list[float],
+    limit: int = 50,
+    score_threshold: float = 0.55,
+    relative_margin: float = 0.15,
+) -> list[int]:
+    settings = get_settings()
+    client = get_client()
+    hits = client.query_points(
+        collection_name=settings.qdrant_collection,
+        query=vector,
+        limit=limit * 4,  # oversample: several hits (chunks + passage) can map to the same supplier
+        score_threshold=score_threshold,
+    ).points
+
+    pairs = [
+        (int(hit.payload.get("supplier_id", hit.id)) if hit.payload else int(hit.id), hit.score)
+        for hit in hits
+    ]
+    return rank_hits_by_supplier(pairs, limit=limit, relative_margin=relative_margin)
